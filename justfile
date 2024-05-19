@@ -1,18 +1,21 @@
+import '.toolchain/rust.just'
+
 _list:
     @just --list
+
+# Format project
+fmt:
+    just --unstable --fmt
+    nixpkgs-fmt .
+    fd --hidden --type=file --extension=md --extension=yml --exec-batch prettier --write
+    fd --hidden --extension=toml --exec-batch taplo format
+    cargo +nightly fmt
 
 # Lint workspace with Clippy
 clippy:
     cargo clippy --workspace --no-default-features
     cargo clippy --workspace --no-default-features --all-features
     cargo hack --feature-powerset --depth=3 clippy --workspace
-
-msrv := ```
-    cargo metadata --format-version=1 \
-    | jq -r 'first(.packages[] | select(.source == null and .rust_version)) | .rust_version' \
-    | sed -E 's/^1\.([0-9]{2})$/1\.\1\.0/'
-```
-msrv_rustup := "+" + msrv
 
 # Downgrade dev-dependencies necessary to run MSRV checks/tests.
 [private]
@@ -58,13 +61,7 @@ doc-watch:
 # Check project
 check:
     just --unstable --fmt --check
-    prettier --check $(fd --type=file --hidden --extension=md --extension=yml)
-    taplo lint $(fd --hidden --extension=toml)
+    fd --hidden --type=file --extension=md --extension=yml --exec-batch prettier --check
+    fd --hidden --extension=toml --exec-batch taplo format --check
+    fd --hidden --extension=toml --exec-batch taplo lint
     cargo +nightly fmt -- --check
-
-# Format project
-fmt:
-    just --unstable --fmt
-    prettier --write $(fd --type=file --hidden --extension=md --extension=yml)
-    taplo format $(fd --hidden --extension=toml)
-    cargo +nightly fmt

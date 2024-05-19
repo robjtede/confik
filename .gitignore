@@ -2,6 +2,9 @@
 /target/
 Cargo.lock
 
+# x52 toolchain
+/.toolchain/
+
 # direnv
 /.direnv/
 
