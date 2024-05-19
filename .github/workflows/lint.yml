@@ -22,15 +22,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
+
       - name: Install Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1.8.0
         with:
           components: clippy
 
-      - name: Install just & cargo-hack
-        uses: taiki-e/install-action@v2.33.12
-        with:
-          tool: just,cargo-hack
+      - name: Enter Nix devshell
+        uses: nicknovitski/nix-develop@v1.1.0
 
       - name: Clippy
         run: just clippy
